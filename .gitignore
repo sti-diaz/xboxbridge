@@ -1,0 +1,21 @@
+# Binarios compilados (se publican como GitHub Release)
+final/
+build/
+dist/
+*.exe
+
+# Intermedios que genera build_installer.ps1
+icon.ico
+wizard_large.bmp
+wizard_small.bmp
+*.spec
+
+# Configuracion local del usuario (especifica de cada control)
+mapping.json
+settings.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
