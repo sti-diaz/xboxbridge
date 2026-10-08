@@ -18,6 +18,7 @@
 [![Python](https://img.shields.io/badge/Python-3.11-0b1710?style=for-the-badge&logo=python&logoColor=3ee05a)](https://www.python.org/)
 [![ViGEmBus](https://img.shields.io/badge/driver-ViGEmBus-0b1710?style=for-the-badge&logo=xbox&logoColor=3ee05a)](https://github.com/nefarius/ViGEmBus/releases)
 [![Release](https://img.shields.io/github/v/release/sti-diaz/xboxbridge?style=for-the-badge&color=1e8a36&label=release)](https://github.com/sti-diaz/xboxbridge/releases/latest)
+[![License: MIT](https://img.shields.io/badge/license-MIT-0b1710?style=for-the-badge&logo=opensourceinitiative&logoColor=3ee05a)](LICENSE)
 
 <a href="https://www.paypal.com/donate/?hosted_button_id=GJP62Y73ZDBR8">
   <img src="https://img.shields.io/badge/♥%20Donar-PayPal-3ee05a?style=for-the-badge&logo=paypal&logoColor=white&labelColor=1e8a36" alt="Donar con PayPal">
@@ -175,10 +176,23 @@ xboxbridge/
 ├── build_installer.ps1   → PyInstaller (portable + carpeta) + Inno Setup
 ├── installer.iss         → definición del instalador
 ├── requirements.txt
-└── logo.png
+├── logo.png
+├── LICENSE                 → MIT
+└── THIRD_PARTY_LICENSES.md → licencias de las dependencias empaquetadas
 ```
 
 **Stack:** `pygame` (SDL / DirectInput) · `vgamepad` (ViGEmBus) · `tkinter` · `pystray` · `Pillow` · `PyInstaller` · `Inno Setup`
+
+---
+
+## `> cat LICENSE`
+
+```text
+MIT License · Copyright (c) 2026 Gustavo Díaz
+```
+
+Úsalo, modifícalo y compártelo libremente, manteniendo el aviso de copyright. Ver [`LICENSE`](LICENSE).
+Los ejecutables incluyen bibliotecas de terceros con sus propias licencias (pygame y pystray son LGPL): ver [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md).
 
 ---
 

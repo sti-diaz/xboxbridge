@@ -34,6 +34,8 @@ Name: "desktopicon"; Description: "Crear acceso directo en el escritorio"; Group
 
 [Files]
 Source: "build\XboxBridge\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "LICENSE"; DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignoreversion
+Source: "THIRD_PARTY_LICENSES.md"; DestDir: "{app}"; Flags: ignoreversion
 ; Mapeo actual como punto de partida (no pisa uno existente)
 Source: "mapping.json"; DestDir: "{userappdata}\XboxBridge"; Flags: onlyifdoesntexist uninsneveruninstall skipifsourcedoesntexist
 
