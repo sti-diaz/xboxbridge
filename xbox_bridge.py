@@ -203,25 +203,34 @@ def run_bridge():
     pad = vg.VX360Gamepad()
     consts = dict(BUTTONS)
     log("Puente activo (Xbox 360 virtual). Ctrl+C para salir.")
+    a = m["axes"]
+    last = None
     try:
         while True:
             if stop.is_set():
                 break
             pygame.event.pump()
-            for name, idx in m["buttons"].items():
-                (pad.press_button if js.get_button(idx) else pad.release_button)(button=consts[name])
+            pressed = {consts[name] for name, idx in m["buttons"].items() if js.get_button(idx)}
+            if js.get_numhats() and js.get_hat(0) in DPAD:
+                pressed.add(DPAD[js.get_hat(0)])
+            # Cuantizado a la resolucion real de XInput (sticks 16 bits, gatillos 8 bits)
+            sticks = tuple(round(stick(js, a[k]) * 32767) for k in ("LX", "LY", "RX", "RY"))
+            trigs = tuple(round(trigger(js, a[k]) * 255) for k in ("LT", "RT"))
+            state = (frozenset(pressed), sticks, trigs)
 
-            if js.get_numhats():
-                hx, hy = js.get_hat(0)
-                for d, c in DPAD.items():
-                    (pad.press_button if (hx, hy) == d else pad.release_button)(button=c)
-
-            a = m["axes"]
-            pad.left_joystick_float(stick(js, a["LX"]), stick(js, a["LY"]))
-            pad.right_joystick_float(stick(js, a["RX"]), stick(js, a["RY"]))
-            pad.left_trigger_float(trigger(js, a["LT"]))
-            pad.right_trigger_float(trigger(js, a["RT"]))
-            pad.update()
+            # Solo se envia un reporte cuando algo cambia. Enviarlo en cada vuelta hace que los
+            # juegos crean que el mando se esta usando sin parar y dejen de aceptar teclado/mouse.
+            if state != last:
+                for c in consts.values():
+                    (pad.press_button if c in pressed else pad.release_button)(button=c)
+                for c in DPAD.values():
+                    (pad.press_button if c in pressed else pad.release_button)(button=c)
+                pad.left_joystick(sticks[0], sticks[1])
+                pad.right_joystick(sticks[2], sticks[3])
+                pad.left_trigger(trigs[0])
+                pad.right_trigger(trigs[1])
+                pad.update()
+                last = state
             time.sleep(1 / HZ)
     except (KeyboardInterrupt, Stopped):
         pass
