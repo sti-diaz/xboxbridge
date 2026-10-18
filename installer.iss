@@ -1,7 +1,7 @@
 ﻿; Instalador de Xbox Bridge (Inno Setup 6). Se compila con build_installer.ps1.
 
 #define AppName "Xbox Bridge"
-#define AppVersion "1.2.1"
+#define AppVersion "1.2.2"
 #define AppExe "XboxBridge.exe"
 
 [Setup]

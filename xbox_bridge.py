@@ -73,6 +73,22 @@ def open_js():
     return js
 
 
+def wait_reconnect():
+    """Espera a que el control vuelva a aparecer tras apagarse. Al reconectar, Windows/SDL lo
+    registra como un dispositivo nuevo, asi que hay que abrirlo de nuevo."""
+    log("Control desconectado. Esperando a que se vuelva a encender...")
+    while True:
+        if stop.is_set():
+            raise Stopped
+        for e in pygame.event.get():
+            if e.type == pygame.JOYDEVICEADDED:
+                js = pygame.joystick.Joystick(e.device_index)
+                js.init()
+                log(f"Control reconectado: {js.get_name()}")
+                return js
+        time.sleep(0.1)
+
+
 def poll():
     if stop.is_set():
         raise Stopped
@@ -205,17 +221,31 @@ def run_bridge():
     log("Puente activo (Xbox 360 virtual). Ctrl+C para salir.")
     a = m["axes"]
     last = None
+    neutral = (frozenset(), (0, 0, 0, 0), (0, 0))
     try:
         while True:
             if stop.is_set():
                 break
-            pygame.event.pump()
-            pressed = {consts[name] for name, idx in m["buttons"].items() if js.get_button(idx)}
-            if js.get_numhats() and js.get_hat(0) in DPAD:
-                pressed.add(DPAD[js.get_hat(0)])
-            # Cuantizado a la resolucion real de XInput (sticks 16 bits, gatillos 8 bits)
-            sticks = tuple(round(stick(js, a[k]) * 32767) for k in ("LX", "LY", "RX", "RY"))
-            trigs = tuple(round(trigger(js, a[k]) * 255) for k in ("LT", "RT"))
+            lost = any(e.type == pygame.JOYDEVICEREMOVED and e.instance_id == js.get_instance_id()
+                       for e in pygame.event.get())
+            if not lost:
+                try:
+                    pressed = {consts[name] for name, idx in m["buttons"].items() if js.get_button(idx)}
+                    if js.get_numhats() and js.get_hat(0) in DPAD:
+                        pressed.add(DPAD[js.get_hat(0)])
+                    # Cuantizado a la resolucion real de XInput (sticks 16 bits, gatillos 8 bits)
+                    sticks = tuple(round(stick(js, a[k]) * 32767) for k in ("LX", "LY", "RX", "RY"))
+                    trigs = tuple(round(trigger(js, a[k]) * 255) for k in ("LT", "RT"))
+                except pygame.error:  # el dispositivo desaparecio entre eventos
+                    lost = True
+            if lost:
+                # Soltar todo para que el juego no quede con un boton "pegado", y mantener
+                # vivo el mando virtual mientras el control real vuelve.
+                pad.reset()
+                pad.update()
+                last = neutral
+                js = wait_reconnect()
+                continue
             state = (frozenset(pressed), sticks, trigs)
 
             # Solo se envia un reporte cuando algo cambia. Enviarlo en cada vuelta hace que los
