@@ -12,6 +12,7 @@ componentes de terceros, cada uno bajo su propia licencia. La licencia MIT de es
 | [pystray](https://github.com/moses-palmer/pystray) | GNU LGPL 3.0 | https://github.com/moses-palmer/pystray |
 | [vgamepad](https://github.com/yannbouteiller/vgamepad) | MIT | https://github.com/yannbouteiller/vgamepad |
 | [ViGEmClient](https://github.com/nefarius/ViGEmClient) (incluido en vgamepad) | MIT | https://github.com/nefarius/ViGEmClient |
+| [ViGEmBus](https://github.com/nefarius/ViGEmBus) (instalador del driver, incluido en vgamepad) | BSD 3-Clause (texto abajo) | https://github.com/nefarius/ViGEmBus |
 | [Pillow](https://python-pillow.org/) | MIT-CMU (HPND) | https://github.com/python-pillow/Pillow |
 | [Python](https://www.python.org/) | PSF License | https://github.com/python/cpython |
 | Tcl/Tk (tkinter) | Licencia tipo BSD de Tcl/Tk | https://www.tcl-lang.org/ |
@@ -25,14 +26,48 @@ enlaces de arriba. Puedes reemplazarlas por otra versión compatible ejecutando 
 el código (`pip install -r requirements.txt` y `python xbox_bridge_gui.py`) o recompilando con
 `build_installer.ps1`.
 
+## Licencia de ViGEmBus
+
+Xbox Bridge redistribuye sin modificaciones el instalador `ViGEmBusSetup_x64.msi` y lo ejecuta
+solo si el driver no está instalado. Su licencia exige reproducir este aviso:
+
+```text
+BSD 3-Clause License
+
+Copyright (c) 2016-2020, Nefarius Software Solutions e.U.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
+
 ## Software que se instala por separado
 
-Xbox Bridge no incluye estos programas, pero los necesita o los recomienda:
+Xbox Bridge no incluye este programa, pero lo recomienda:
 
-- **ViGEmBus** (driver): https://github.com/nefarius/ViGEmBus
-- **HidHide**: https://github.com/nefarius/HidHide
-
-Cada uno tiene su propia licencia, publicada en su repositorio.
+- **HidHide**: https://github.com/nefarius/HidHide (licencia publicada en su repositorio)
 
 ## Marcas
 

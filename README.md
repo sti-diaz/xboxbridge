@@ -57,6 +57,9 @@ Lee el control real ~250 veces por segundo y replica cada botón, stick y gatill
 | 🚀 | **Inicio con Windows** | Arranca oculto en la bandeja y empieza a emular solo. Si el control aún no está emparejado, lo espera. |
 | ❌ | **Cerrar a tu manera** | Al cerrar: *Segundo plano* / *Cerrar completamente* / *Preguntar*, con "recordar mi elección". |
 | 🔒 | **Instancia única** | Abrirlo dos veces no crea dos mandos virtuales: la segunda instancia trae al frente la primera. |
+| 🔁 | **Hot-plug** | Apaga y prende el control cuando quieras: lo retoma solo, sin botones "pegados" y sin que el juego pierda el mando. |
+| ⌨️ | **Teclado + mando** | Solo envía datos cuando tocas el control, así puedes alternar con teclado y mouse dentro del juego. |
+| 🔌 | **Driver incluido** | Trae el instalador de ViGEmBus adentro: si falta, lo instala por ti. |
 | 📦 | **Portable o instalable** | Un `.exe` suelto o un instalador que no pide permisos de administrador. |
 
 ---
@@ -66,11 +69,15 @@ Lee el control real ~250 veces por segundo y replica cada botón, stick y gatill
 ### 0. Requisitos (una sola vez)
 
 ```diff
-+ [OBLIGATORIO]  ViGEmBus  → el driver que crea el mando Xbox virtual
-+                https://github.com/nefarius/ViGEmBus/releases
++ [INCLUIDO]     ViGEmBus  → el driver que crea el mando Xbox virtual
++                Xbox Bridge lo trae adentro y lo instala si falta. No descargas nada.
 ! [RECOMENDADO]  HidHide   → oculta el control real para que los juegos no vean DOS mandos
 !                https://github.com/nefarius/HidHide/releases
 ```
+
+> [!NOTE]
+> Instalar un driver siempre requiere permiso de administrador: Windows te mostrará **una vez** el aviso de control de cuentas (UAC).
+> ViGEmBus está archivado por su autor desde 2023, pero su última versión sigue funcionando en Windows 10 y 11.
 
 ### 1. Descarga
 
@@ -86,9 +93,12 @@ Ve a **[Releases](https://github.com/sti-diaz/xboxbridge/releases/latest)** y el
 ```console
 C:\> XboxBridge_Setup.exe
   [✓] Se instala en %LOCALAPPDATA%\Programs\Xbox Bridge   (sin admin)
+  [✓] Driver ViGEmBus: se instala solo si falta   (pide UAC una vez)
   [✓] Opción: "Iniciar con Windows y emular automáticamente"
   [✓] Opción: acceso directo en el escritorio
 ```
+
+¿Usas la **portable**? Si falta el driver, al apretar **`EMULAR`** te ofrece instalarlo con un botón.
 
 ### 3. Configura HidHide *(si lo usas)*
 
@@ -142,7 +152,8 @@ La versión portable usa un `mapping.json` que esté **junto al .exe** si existe
 
 | Síntoma | Causa probable | Fix |
 |---|---|---|
-| Error con **ViGEm** al emular | Falta el driver | Instala [ViGEmBus](https://github.com/nefarius/ViGEmBus/releases) y reinicia. |
+| Aviso *"Falta el driver ViGEmBus"* | El driver no está instalado | Pulsa **Instalar driver** y acepta el permiso de administrador. Si lo rechazaste, vuelve a apretar **`EMULAR`**. |
+| Error con **ViGEm** al emular aunque el driver está | Driver dañado o a medio instalar | Reinstálalo desde [ViGEmBus releases](https://github.com/nefarius/ViGEmBus/releases) y reinicia. |
 | Se queda en *"Esperando control..."* | Control no emparejado, o HidHide lo oculta también de la app | Empareja el control / agrega `XboxBridge.exe` en HidHide → *Applications*. |
 | El juego recibe **doble input** | El juego ve el control real **y** el virtual | Activa HidHide sobre el control real. |
 | Botones cruzados o sticks invertidos | Mapeo viejo o de otro control | **`RE-MAPEAR`**. |

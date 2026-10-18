@@ -1,8 +1,10 @@
-﻿; Instalador de Xbox Bridge (Inno Setup 6). Se compila con build_installer.ps1.
+; Instalador de Xbox Bridge (Inno Setup 6). Se compila con build_installer.ps1.
 
 #define AppName "Xbox Bridge"
-#define AppVersion "1.2.2"
+#define AppVersion "1.3.0"
 #define AppExe "XboxBridge.exe"
+; Instalador del driver que ya trae vgamepad (queda dentro de la carpeta de la app)
+#define ViGEmMsi "_internal\vgamepad\win\vigem\install\x64\ViGEmBusSetup_x64.msi"
 
 [Setup]
 AppId={{6C1F4B9E-3E2A-4D5B-9A61-7B2E0C8F1D42}
@@ -24,11 +26,13 @@ SetupIconFile=icon.ico
 WizardImageFile=wizard_large.bmp
 WizardSmallImageFile=wizard_small.bmp
 CloseApplications=yes
+ArchitecturesAllowed=x64compatible
 
 [Languages]
 Name: "es"; MessagesFile: "compiler:Languages\Spanish.isl"
 
 [Tasks]
+Name: "vigembus"; Description: "Instalar driver ViGEmBus (necesario para emular, pide permiso de administrador)"; GroupDescription: "Driver:"; Check: NeedsViGEmBus
 Name: "autostart"; Description: "Iniciar con Windows y emular automaticamente"; GroupDescription: "Opciones:"
 Name: "desktopicon"; Description: "Crear acceso directo en el escritorio"; GroupDescription: "Opciones:"; Flags: unchecked
 
@@ -36,8 +40,6 @@ Name: "desktopicon"; Description: "Crear acceso directo en el escritorio"; Group
 Source: "build\XboxBridge\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "LICENSE"; DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignoreversion
 Source: "THIRD_PARTY_LICENSES.md"; DestDir: "{app}"; Flags: ignoreversion
-; Mapeo actual como punto de partida (no pisa uno existente)
-Source: "mapping.json"; DestDir: "{userappdata}\XboxBridge"; Flags: onlyifdoesntexist uninsneveruninstall skipifsourcedoesntexist
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"
@@ -50,9 +52,16 @@ Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: 
     ValueData: """{app}\{#AppExe}"" --autostart"; Tasks: autostart; Flags: uninsdeletevalue
 
 [Run]
+Filename: "msiexec.exe"; Parameters: "/i ""{app}\{#ViGEmMsi}"" /passive /norestart"; Verb: "runas"; \
+    Flags: shellexec waituntilterminated; StatusMsg: "Instalando driver ViGEmBus..."; Tasks: vigembus
 Filename: "{app}\{#AppExe}"; Description: "Abrir {#AppName} ahora"; Flags: nowait postinstall skipifsilent
 
 [Code]
+function NeedsViGEmBus: Boolean;
+begin
+  Result := not RegKeyExists(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Services\ViGEmBus');
+end;
+
 // La casilla de la app puede haber creado el valor Run aunque no se marcara la tarea
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 begin

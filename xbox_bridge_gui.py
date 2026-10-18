@@ -5,6 +5,7 @@ Empaquetar (portable + instalador en .\final): ver build_installer.ps1
 --autostart: arranca oculto en la bandeja y empieza a emular solo (lo usa el inicio de Windows).
 """
 import ctypes
+import ctypes.wintypes as wt
 import json
 import pathlib
 import queue
@@ -107,6 +108,40 @@ def dark_titlebar(win):
         dwm(hwnd, 35, ctypes.byref(ctypes.c_int(r | g << 8 | b << 16)), 4)     # color (solo Win11)
     except Exception:
         pass
+
+
+VIGEM_SERVICE = r"SYSTEM\CurrentControlSet\Services\ViGEmBus"
+# El instalador del driver viene dentro del paquete vgamepad (tambien en el .exe empaquetado)
+VIGEM_MSI = pathlib.Path(xb.vg.__file__).parent / "win" / "vigem" / "install" / "x64" / "ViGEmBusSetup_x64.msi"
+
+
+def vigem_installed():
+    try:
+        winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, VIGEM_SERVICE).Close()
+        return True
+    except OSError:
+        return False
+
+
+class SHELLEXECUTEINFOW(ctypes.Structure):
+    _fields_ = [("cbSize", wt.DWORD), ("fMask", wt.ULONG), ("hwnd", wt.HWND), ("lpVerb", wt.LPCWSTR),
+                ("lpFile", wt.LPCWSTR), ("lpParameters", wt.LPCWSTR), ("lpDirectory", wt.LPCWSTR),
+                ("nShow", ctypes.c_int), ("hInstApp", wt.HINSTANCE), ("lpIDList", ctypes.c_void_p),
+                ("lpClass", wt.LPCWSTR), ("hkeyClass", wt.HKEY), ("dwHotKey", wt.DWORD),
+                ("hIconOrMonitor", wt.HANDLE), ("hProcess", wt.HANDLE)]
+
+
+def install_vigem():
+    """Ejecuta el .msi de ViGEmBus con permiso de administrador (UAC) y espera a que termine.
+    Retorna False si el usuario rechaza el permiso o falla la instalacion."""
+    sei = SHELLEXECUTEINFOW(cbSize=ctypes.sizeof(SHELLEXECUTEINFOW), fMask=0x40,  # SEE_MASK_NOCLOSEPROCESS
+                            lpVerb="runas", lpFile="msiexec.exe",
+                            lpParameters=f'/i "{VIGEM_MSI}" /passive /norestart', nShow=1)
+    if not ctypes.windll.shell32.ShellExecuteExW(ctypes.byref(sei)) or not sei.hProcess:
+        return False
+    ctypes.windll.kernel32.WaitForSingleObject(sei.hProcess, 0xFFFFFFFF)
+    ctypes.windll.kernel32.CloseHandle(sei.hProcess)
+    return vigem_installed()
 
 
 def claim_instance():
@@ -410,7 +445,46 @@ class App:
         if self.mode == "emu":
             xb.stop.set()
         elif self.mode is None and self.mapped():
-            self.start("emu", xb.run_bridge)
+            if vigem_installed():
+                self.start("emu", xb.run_bridge)
+            else:
+                self.offer_vigem()
+
+    def offer_vigem(self):
+        if self.root.state() == "withdrawn":  # arranque con Windows: no hay ventana donde preguntar
+            self.tray.notify("Falta el driver ViGEmBus. Abre Xbox Bridge para instalarlo.", "Xbox Bridge")
+            return
+        choice = self.dialog(
+            "Falta el driver ViGEmBus",
+            "Es el driver que crea el mando Xbox virtual.\n"
+            "Xbox Bridge lo trae incluido: solo falta instalarlo.\n"
+            "Windows te pedira permiso de administrador.",
+            [("install", "Instalar driver", "primary"), ("cancel", "Cancelar", "secondary")])
+        if choice != "install":
+            return
+        self.write("Instalando driver ViGEmBus...")
+        self.status.config(text="Instalando driver ViGEmBus...", fg=BLUE)
+        self.btn_map.set(enabled=False)
+        self.btn_emu.set(enabled=False)
+
+        def run():
+            ok = install_vigem()
+            self.call(lambda: self.vigem_done(ok))
+
+        threading.Thread(target=run, daemon=True).start()
+
+    def vigem_done(self, ok):
+        self.refresh()
+        if ok:
+            self.write("Driver ViGEmBus instalado.")
+            self.toggle_emu()
+        else:
+            self.write("No se instalo el driver ViGEmBus.", "err")
+            self.dialog("No se instalo el driver",
+                        "La instalacion se cancelo o no se concedio el permiso de administrador.\n"
+                        "Puedes intentarlo de nuevo con \"Emular\", o instalarlo a mano desde\n"
+                        "github.com/nefarius/ViGEmBus/releases",
+                        [("ok", "Aceptar", "secondary")])
 
     def toggle_autostart(self):
         try:

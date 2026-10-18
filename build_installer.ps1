@@ -28,6 +28,10 @@ $common = @("--noconfirm", "--windowed", "--name", "XboxBridge", "--collect-all"
 # Instalable: modo carpeta (arranca mas rapido)
 python -m PyInstaller @common --onedir --distpath build xbox_bridge_gui.py
 if ($LASTEXITCODE) { throw "PyInstaller (carpeta) fallo" }
+# El instalador ejecuta este .msi si falta el driver: sin el no se debe publicar
+if (-not (Test-Path "build\XboxBridge\_internal\vgamepad\win\vigem\install\x64\ViGEmBusSetup_x64.msi")) {
+    throw "Falta ViGEmBusSetup_x64.msi en el build (revisa --collect-all vgamepad)"
+}
 
 # Portable: un solo .exe
 New-Item -ItemType Directory -Force final | Out-Null
